@@ -9,14 +9,16 @@ current_download = None  # Global reference to the running process
 
 download_state = BehaviorSubject(False)
 
+
 def get_download_state():
     return download_state
+
 
 # Custom Logger to capture yt-dlp output and update UI text box
 class CustomLogger:
     def __init__(self, append_text_callback):
         self.append_text_callback = append_text_callback
-        self.logger = logging.getLogger('yt_dlp')
+        self.logger = logging.getLogger("yt_dlp")
         self.logger.setLevel(logging.DEBUG)
 
         # Creating a log handler that will print logs to the text box
@@ -42,27 +44,46 @@ class CustomLogger:
 
 
 def extract_video_info(url, playlist=False):
-    ydl_opts = {
-        'extract_flat': not playlist
-    }
+    ydl_opts = {"extract_flat": not playlist}
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         return ydl.extract_info(url, download=False)
 
+
 # Function to handle the download
-def download_video(url, video_format_id, audio_format_id, output_path, append_text_callback, audio_only=False, playlist=False):
+def download_video(
+    url,
+    video_format_id,
+    audio_format_id,
+    output_path,
+    append_text_callback,
+    audio_only=False,
+    playlist=False,
+):
     global current_download
 
     ydl_opts = {
-        'outtmpl': f'{output_path}/%(title)s.%(ext)s',
-        'quiet': True,  # Disable default terminal output
-        'logger': CustomLogger(append_text_callback),  # Custom logger to handle appending logs
-        'noplaylist': not playlist,
-        'format': f'{video_format_id}+{audio_format_id}' if not audio_only else 'bestaudio/best',
-        'postprocessors': [{
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'mp3',
-            'preferredquality': '192',
-        }] if audio_only else [],
+        "outtmpl": f"{output_path}/%(title)s.%(ext)s",
+        "quiet": True,  # Disable default terminal output
+        "logger": CustomLogger(
+            append_text_callback
+        ),  # Custom logger to handle appending logs
+        "noplaylist": not playlist,
+        "format": (
+            f"{video_format_id}+{audio_format_id}"
+            if not audio_only
+            else "bestaudio/best"
+        ),
+        "postprocessors": (
+            [
+                {
+                    "key": "FFmpegExtractAudio",
+                    "preferredcodec": "mp3",
+                    "preferredquality": "192",
+                }
+            ]
+            if audio_only
+            else []
+        ),
     }
 
     current_download = yt_dlp.YoutubeDL(ydl_opts)
